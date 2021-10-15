@@ -8,7 +8,7 @@
       <div class='modal-body'>
         <div class="mb-3">
           <label for="name" class="form-label">First Name</label>
-          <input type="text" class="form-control input-words" id="firstname" name="firstname" placeholder="enter your first name">
+          <input type="text" class="form-control input-words" id="firstname" name="firstname" placeholder="enter your first name" pattern="[a-z]{1,15}" required>
         </div>
         <div class="mb-3">
           <label for="lastname" class="form-label">Last Name</label>
@@ -29,6 +29,7 @@
       <div class='modal-footer'>
         <button type='button' class='btn btn-secondary' data-bs-dismiss='modal' id='close'>Close</button>
         <!-- <button type='button' id='add-user' name='update' class='btn btn-primary'>Save</button> -->
+        <!-- <button type='button' id='edit-user__btn' class='btn btn-primary'>Edit</button> -->
       </div>
     </div>
   </div>
