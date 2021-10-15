@@ -1,20 +1,25 @@
 $(document).ready(function () {
     // delete danger confirm 
     function deleteDangerModal() {
-        let paras = $('.danger');
-        for (let i = 0; i < paras.length; i++) {
+        var paras = $('.error-name');
+        for (var i = 0; i < paras.length; i++) {
             paras.remove();
         }
-    }
-    /// INPUT ADD EDIT NAME ONLY LETTERS
-    $(document).ready(function () {
-        $(".input-words").keydown(function (event) {
-            let inputValue = event.which;
-            if (!(inputValue >= 65 && inputValue <= 120) && (inputValue != 0)) {
-                event.preventDefault();
-            }
-        });
-    });
+    };
+    $('#firstname,#lastname,#role').change(function () {
+        let inputName = $('#firstname').val();
+        let inputNameLength = inputName.length;
+        let inputLastName = $('#lastname').val();
+        let inputLastNameLength = inputLastName.length;
+        let selectRole = $('#role').val();
+        if (selectRole == '1' || selectRole == '2') {
+            $('.danger-role').remove();
+            $('.error-name').remove();
+        }
+        if (inputNameLength && inputLastNameLength >= 2) {
+            $('.danger-name').remove();
+        }
+    })
     // remove checkbox
     function removeCheckbox() {
         $('#check_all, .check').prop('checked', false)
@@ -30,32 +35,17 @@ $(document).ready(function () {
                 this.checked = false;
             });
         }
-        $('.check').click(function () {
-            if ($(this).is(':checked') == false) {
-                $('#check_all').prop('checked', false);
-            }
-        });
     });
-    $(document).on('click', '.check', function () {
-        $('#check_all').prop('checked', false);
-    })
-    ////// find DATA ID
-    function getDataId() {
-        $.post("add-edit.php",
-            {
-                id: true,
-            },
-            function (data) {
-                dataId = $.parseJSON(data);
-                for (let key in dataId) {
-                    dataIdNumder = +dataId[key] + 1;
-                    $('.find-id').val(dataIdNumder);
-                }
-            }
-        )
-    };
-    getDataId();
-    //// added ADD-BTN
+    $('.check').click(function () {
+        let countChecked = $('.check:checkbox:checked').length;
+        let countAll = $('.check:checkbox').length;
+        if (countChecked === countAll) {
+            $('#check_all').prop('checked', true);
+        } else {
+            $('#check_all').prop('checked', false);
+        }
+    });
+    // added ADD-BTN
     $(document).on('click', '#add-user__modal', function () {
         $('.title').text('Add user');
         let btnAdd = "<button type='button' id='add-user__btn' class='btn btn-primary'>Add</button>";
@@ -76,10 +66,8 @@ $(document).ready(function () {
         let statusImg = '';
         if ($("#status:checked").val() == 'on') {
             status = 'on';
-            statusImg = "<input class='status-input' type='hidden' value='on'><span tooltip='online'><i class='fas fa-circle online'></i></span>";
         } else {
             status = 'off';
-            statusImg = "<input class='status-input' type='hidden' value='on'><span tooltip='offline'><i class='fas fa-circle offline'></i></span>";
         }
         if (role == '2') {
             role = 'user';
@@ -87,7 +75,7 @@ $(document).ready(function () {
             role = 'admin';
         }
         if (firstName.length < 2 || lastName.length < 2) {
-            let confirmError = `<div class="alert alert-danger danger" role="alert">
+            let confirmError = `<div class="alert alert-danger danger danger-name" role="alert">
                     please enter your first name or last name
                 </div>`;
             if (!$('#confirm-name').children('.danger').length > 0) {
@@ -95,7 +83,7 @@ $(document).ready(function () {
             } return false;
         }
         if (role == '0') {
-            let confirmError = `<div class="alert alert-danger danger" role="alert">
+            let confirmError = `<div class="alert alert-danger danger danger-role" role="alert">
                     please enter a role
                 </div>`;
             if (!$('#confirm-role').children('.danger').length > 0) {
@@ -112,68 +100,85 @@ $(document).ready(function () {
                 role: role
             },
             success: function (data) {
-                getDataId();
                 deleteDangerModal();
+                let dataParse = $.parseJSON(data);
+                let userId = dataParse.user.id;
+                let statusParse = dataParse.user.status;
+                if (statusParse === 'on') {
+                    statusImg = "<input class='status-input' type='hidden' value='on'><span tooltip='online'><i class='fas fa-circle online'></i></span>";
+                } else {
+                    statusImg = "<input class='status-input' type='hidden' value='on'><span tooltip='offline'><i class='fas fa-circle offline'></i></span>";
+                }
                 $('#firstname').val('');
                 $('#lastname').val('');
                 $('#role').val(0);
                 $('#userModal').modal('hide');
-                let userId = +$('.find-id').val();
                 let tbody = `<tbody>
                             <tr data-idrow = '${userId}'>
                                 <td class='checkboxes'><input class='form-check-input check' type='checkbox' value='${userId}'></td>
-                                <td class='first-name'>${firstName}</td>
-                                <td class='last-name'>${lastName}</td>
+                                <td class='first-name'>${dataParse.user.firstName}</td>
+                                <td class='last-name'>${dataParse.user.lastName}</td>
                                 <td class='status-user'>${statusImg}</td>
-                                <td class='role-user'>${role}</td>
+                                <td class='role-user'>${dataParse.user.role}</td>
                                 <td>   
                                     <ul class='list-unstyled mb-0 d-flex justify-content-start btn-edit-delete'>
                                         <li>
-                                            <button data-id='${userId}' type='button' data-bs-target='#userModal' id="edit-user__modal" data-bs-toggle='modal' class='btn' data-toggle='tooltip' title='' data-original-title='Edit'>
+                                            <button data-id='${userId}' type='button' data-bs-target='#userModal' data-bs-toggle='modal' class='btn btn-dark edit-user__modal' data-toggle='tooltip' title='' data-original-title='Edit'>
                                                 <span tooltip='edit this user'><i class='fas fa-edit'></i></span>
                                             </button>
                                         </li> 
                                         <li>
-                                            <button data-trash='${userId}' id='delete' type='button' class='btn delete text-danger'data-toggle='tooltip' title='' data-original-title='Delete' >
+                                            <button data-trash='${userId}' id='delete' type='button' class='btn delete btn-danger'data-toggle='tooltip' title='' data-original-title='Delete' >
                                                 <span tooltip='delete this user'><i class='fas fa-trash-alt'></i></span>         
                                             </button>
                                         </li>
                                     </ul>        
                                 </td>
                             </tr>
-                            </tbody>`;
+                        </tbody>`;
                 $('table').append(tbody);
+            },
+            error: function (data) {
+                let dataParse = $.parseJSON(data.responseText);
+                let errorText = dataParse.error.message;
+                let confirmError = `<div class="alert alert-danger danger error-name" role="alert">
+                    ${errorText}
+                </div>`;
+                if (!$('#confirm-name').children('.error-name').length > 0) {
+                    $('#confirm-name').append(confirmError);
+                } return false;
             }
-        })
+        });
     });
     /// added EDIT-
-    $(document).on('click', '#edit-user__modal', function () {
+    $(document).on('click', '.edit-user__modal', function () {
         $('.title').text('Edit user');
-        let editId = $(this).data('id');
-        let btnAdd = `<button type='button' id='edit-user__btn' class='btn btn-primary'>Edit</button>`;
+        let idEdit = $(this).data('id');
+        console.log(idEdit);
+        let btnEdit = `<button type='button' id='edit-user__btn' class='btn btn-primary'>Edit</button>`;
         if (!$('#userModal .modal-footer').children('#edit-user__btn').length > 0) {
-            $('#userModal .modal-footer').append(btnAdd);
+            $('#userModal .modal-footer').append(btnEdit);
             $('#add-user__btn').remove();
         };
-        if ($(`[data-idrow='${editId}']`).find('.status-input').val() == 'on') {
+        if ($(`[data-idrow='${idEdit}']`).find('.status-input').val() == 'on') {
             $('#status').prop('checked', true);
         } else {
             $('#status').prop('checked', false);
         }
-        $('#firstname').val($(`[data-idrow='${editId}']`).find('.first-name').text());
-        $('#lastname').val($(`[data-idrow='${editId}']`).find('.last-name').text());
-        if ($(`[data-idrow='${editId}']`).find('.role-user').text() == 'admin') {
+        $('#firstname').val($(`[data-idrow='${idEdit}']`).find('.first-name').text());
+        $('#lastname').val($(`[data-idrow='${idEdit}']`).find('.last-name').text());
+        if ($(`[data-idrow='${idEdit}']`).find('.role-user').text() == 'admin') {
             $('#role').val(1);
-        } else if ($(`[data-idrow='${editId}']`).find('.role-user').text() == 'user') {
+        } else if ($(`[data-idrow='${idEdit}']`).find('.role-user').text() == 'user') {
             $('#role').val(2);
         }
-        $(document).on('click', '#edit-user__btn', function () {
+        $('#edit-user__btn:last').click(function () {
             let firstNameEdit = $('#firstname').val();
             let lastNameEdit = $('#lastname').val();
             let statusEdit = $('#status').val();
             let roleEdit = $('#role').val();
             if (firstNameEdit.length < 2 || lastNameEdit.length < 2) {
-                let confirmError = `<div class="alert alert-danger danger" role="alert">
+                let confirmError = `<div class="alert alert-danger danger danger-name" role="alert">
                     please enter your first name or last name
                 </div>`;
                 if (!$('#confirm-name').children('.danger').length > 0) {
@@ -181,7 +186,7 @@ $(document).ready(function () {
                 } return false;
             }
             if (roleEdit == '0') {
-                let confirmError = `<div class="alert alert-danger danger" role="alert">
+                let confirmError = `<div class="alert alert-danger danger danger-role" role="alert">
                     please enter a role
                 </div>`;
                 if (!$('#confirm-role').children('.danger').length > 0) {
@@ -206,26 +211,39 @@ $(document).ready(function () {
                     lastNameEdit: lastNameEdit,
                     statusEdit: statusEdit,
                     roleEdit: roleEdit,
-                    idEdit: editId,
+                    idEdit: idEdit,
                 },
-                success: function () {
-                    deleteDangerModal();
+                success: function (data) {
+                    $('#edit-user__btn').remove();
+                    let dataParse = $.parseJSON(data);
+                    let userId = dataParse.user.id;
+                    let statusParse = dataParse.user.status;
                     $('#userModal').modal('hide');
-                    $(`[data-idrow='${editId}']`).find('.first-name').text(firstNameEdit);
-                    $(`[data-idrow='${editId}']`).find('.last-name').text(lastNameEdit);
-                    if ($("#status:checked").val() == 'on') {
+                    $(`[data-idrow='${userId}']`).find('.first-name').text(dataParse.user.firstName);
+                    $(`[data-idrow='${userId}']`).find('.last-name').text(dataParse.user.lastName);
+                    if (statusParse == 'on') {
                         statusEdit = 'on';
-                        $(`[data-idrow='${editId}']`).find('.status-user').html("<input class='status-input' type='hidden' value='on'><span tooltip='online'><i class='fas fa-circle online'></i></span>");
+                        $(`[data-idrow='${userId}']`).find('.status-user').html("<input class='status-input' type='hidden' value='on'><span tooltip='online'><i class='fas fa-circle online'></i></span>");
                     } else {
                         statusEdit = 'off';
-                        $(`[data-idrow='${editId}']`).find('.status-user').html("<input class='status-input' type='hidden' value='off'><span tooltip='offline'><i class='fas fa-circle offline'></i></span>");
+                        $(`[data-idrow='${userId}']`).find('.status-user').html("<input class='status-input' type='hidden' value='off'><span tooltip='offline'><i class='fas fa-circle offline'></i></span>");
                     }
-                    if (roleEdit == 'admin') {
-                        $(`[data-idrow='${editId}']`).find('.role-user').text('admin');
+                    if (dataParse.user.role == 'admin') {
+                        $(`[data-idrow='${userId}']`).find('.role-user').text(dataParse.user.role);
                     } else {
-                        $(`[data-idrow='${editId}']`).find('.role-user').text('user');
+                        $(`[data-idrow='${userId}']`).find('.role-user').text(dataParse.user.role);
                     }
-                    editId = 0;
+                    idEdit = null;
+                }, error: function (data) {
+                    console.log(data);
+                    let dataParse = $.parseJSON(data.responseText);
+                    let errorText = dataParse.error.message;
+                    let confirmError = `<div class="alert alert-danger danger error-name" role="alert">
+                    ${errorText}
+                </div>`;
+                    if (!$('#confirm-name').children('.error-name').length > 0) {
+                        $('#confirm-name').append(confirmError);
+                    } return false;
                 }
             })
         });
@@ -249,30 +267,29 @@ $(document).ready(function () {
                     deleteId: deleteId
                 },
                 dataType: 'html',
-                beforeSend: function () {
-                    $(`[data-idrow='${deleteId}']`).remove();
-                },
-                success: function (data, status) {
+                success: function (data) {
+                    dataParse = $.parseJSON(data);
                     $('#deleteModal').modal('hide');
+                    $(`[data-idrow='${dataParse.id}']`).remove();
                 }
             })
         });
     });
     ///// Edit status
-    $('#btn-okey,#btn-okey2').click(function () {
+    $('.btn-okey:first').click(function () {
         let id = [];
         $('.check:checkbox:checked').each(function (i) {
             id[i] = $(this).val();
         })
         // select's confirm window
-        if ($('.select:last').val() === '0' && $('.select:first').val() === '0' || id.length === 0) {
-            $('#deleteModal').modal('toggle');
+        if ($('.select:first').val() === '0' || id.length === 0) {
+            $('#deleteModal').modal('show');
             $('.title-modal').text('Please select');
             $('.body-modal').text('Select an action or users');
             $('#delete-row').remove();
         }
         // actions 1/2/3
-        if ($('.select:first').val() === '1' || $('.select:last').val() === '1') {
+        if ($('.select:first').val() === '1') {
             let selectValue = 'on';;
             $.ajax({
                 url: 'update.php',
@@ -282,17 +299,16 @@ $(document).ready(function () {
                     selectValue: selectValue
                 },
                 dataType: 'html',
-                beforeSend: function () {
-                    for (let i = 0; i < id.length; i++) {
-                        $(`[data-idrow='${id[i]}']`).find('.status-user').html("<input class='status-input' type='hidden' value='on'><span tooltip='online'><i class='fas fa-circle online'></i></span>");
-                    }
-                },
-                success: function () {
+                success: function (data) {
+                    dataParse = $.parseJSON(data);
+                    let dataId = dataParse.selectId;
                     removeCheckbox();
-                    $('.select:first,.select:last').val(0);
+                    for (let i = 0; i < dataId.length; i++) {
+                        $(`[data-idrow='${dataId[i]}']`).find('.status-user').html("<input class='status-input' type='hidden' value='on'><span tooltip='online'><i class='fas fa-circle online'></i></span>");
+                    }
                 }
             });
-        } else if ($('.select:first').val() === '2' || $('.select:last').val() === '2') {
+        } else if ($('.select:first').val() === '2') {
             let selectValue = 'off';;
             $.ajax({
                 url: 'update.php',
@@ -302,18 +318,102 @@ $(document).ready(function () {
                     selectValue: selectValue
                 },
                 dataType: 'html',
-                beforeSend: function () {
-                    for (let i = 0; i < id.length; i++) {
-                        $(`[data-idrow='${id[i]}']`).find('.status-user').html("<input class='status-input' type='hidden' value='off'><span tooltip='offline'><i class='fas fa-circle offline'></i></span>");
-                    }
-                },
-                success: function () {
+                success: function (data) {
+                    dataParse = $.parseJSON(data);
+                    let dataId = dataParse.selectId;
                     removeCheckbox();
-                    $('.select:first,.select:last').val(0);
+                    for (let i = 0; i < dataId.length; i++) {
+                        $(`[data-idrow='${dataId[i]}']`).find('.status-user').html("<input class='status-input' type='hidden' value='off'><span tooltip='offline'><i class='fas fa-circle offline'></i></span>");
+                    }
                 }
             });
         }
-        else if ($('.select:first').val() === '3' || $('.select:last').val() === '3') {
+        else if ($('.select:first').val() === '3') {
+            if ($('.select').val() === '3' && id.length === 0) {
+                $('#deleteModal').modal('toggle');
+                $('.title-modal').text('Please select');
+                $('.body-modal').text('Select an action or users');
+                return;
+            }
+            if ($("#delete-row").length === 0) {
+                $('#deleteModal .modal-footer').append("<button type='button' class='btn btn-dark' id='delete-row'>OK</button>");
+            }
+            $('#deleteModal').modal('show');
+            $('.title-modal').text('Delete');
+            $('.body-modal').text('Are you sure you want to delete the user?');
+            $('#delete-row').click(function () {
+                $.ajax({
+                    url: 'delete.php',
+                    method: 'POST',
+                    data: { selectedId: id },
+                    success: function (data) {
+                        $('#delete-row').remove();
+                        dataParse = $.parseJSON(data);
+                        let dataId = dataParse.selectId;
+                        $('#deleteModal').modal('hide');
+                        removeCheckbox();
+                        for (let i = 0; i < dataId.length; i++) {
+                            $(`[data-idrow='${dataId[i]}']`).remove();
+                        };
+                    },
+                });
+            });
+        };
+    });
+    //// second block
+    $('.btn-okey:last').click(function () {
+        let id = [];
+        $('.check:checkbox:checked').each(function (i) {
+            id[i] = $(this).val();
+        })
+        // select's confirm window
+        if ($('.select:last').val() === '0' || id.length === 0) {
+            $('#deleteModal').modal('toggle');
+            $('.title-modal').text('Please select');
+            $('.body-modal').text('Select an action or users');
+            $('#delete-row').remove();
+        }
+        // actions 1/2/3
+        if ($('.select:last').val() === '1') {
+            let selectValue = 'on';;
+            $.ajax({
+                url: 'update.php',
+                method: 'POST',
+                data: {
+                    id: id,
+                    selectValue: selectValue
+                },
+                dataType: 'html',
+                success: function (data) {
+                    dataParse = $.parseJSON(data);
+                    let dataId = dataParse.selectId;
+                    removeCheckbox();
+                    for (let i = 0; i < dataId.length; i++) {
+                        $(`[data-idrow='${dataId[i]}']`).find('.status-user').html("<input class='status-input' type='hidden' value='off'><span tooltip='offline'><i class='fas fa-circle offline'></i></span>");
+                    }
+                }
+            });
+        } else if ($('.select:last').val() === '2') {
+            let selectValue = 'off';;
+            $.ajax({
+                url: 'update.php',
+                method: 'POST',
+                data: {
+                    id: id,
+                    selectValue: selectValue
+                },
+                dataType: 'html',
+                success: function (data) {
+                    dataParse = $.parseJSON(data);
+                    let dataId = dataParse.selectId;
+                    removeCheckbox();
+                    for (let i = 0; i < dataId.length; i++) {
+                        $(`[data-idrow='${dataId[i]}']`).find('.status-user').html("<input class='status-input' type='hidden' value='off'><span tooltip='offline'><i class='fas fa-circle offline'></i></span>");
+                    }
+                }
+            });
+        }
+        else if ($('.select:last').val() === '3') {
             if ($('.select').val() === '3' && id.length === 0) {
                 $('#deleteModal').modal('toggle');
                 $('.title-modal').text('Please select');
@@ -332,17 +432,16 @@ $(document).ready(function () {
                     method: 'POST',
                     data: { selectedId: id },
                     dataType: 'html',
-                    beforeSend: function () {
-                        for (let i = 0; i < id.length; i++) {
-                            $(`[data-idrow='${id[i]}']`).remove();
-                        }
-                    },
-                    success: function () {
+                    success: function (data) {
+                        $('#delete-row').remove();
+                        dataParse = $.parseJSON(data);
+                        let dataId = dataParse.selectId;
                         $('#deleteModal').modal('hide');
-                        id = 0;
                         removeCheckbox();
-                        $('.select:first,.select:last').val(0);
-                    }
+                        for (let i = 0; i < dataId.length; i++) {
+                            $(`[data-idrow='${dataId[i]}']`).remove();
+                        };
+                    },
                 });
             })
         }
