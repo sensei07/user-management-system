@@ -122,7 +122,7 @@ $(document).ready(function () {
                                 <td class='role-user'>${dataParse.user.role}</td>
                                 <td>   
                                     <ul class='list-unstyled mb-0 d-flex justify-content-start btn-edit-delete'>
-                                        <li>
+                                        <li class="edit-btn__item">
                                             <button data-id='${userId}' type='button' data-bs-target='#userModal' data-bs-toggle='modal' class='btn btn-dark edit-user__modal' data-toggle='tooltip' title='' data-original-title='Edit'>
                                                 <span tooltip='edit this user'><i class='fas fa-edit'></i></span>
                                             </button>
