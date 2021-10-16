@@ -329,7 +329,7 @@ $(document).ready(function () {
             });
         }
         else if ($('.select:first').val() === '3') {
-            if ($('.select').val() === '3' && id.length === 0) {
+            if ($('.select:first').val() === '3' && id.length === 0) {
                 $('#deleteModal').modal('toggle');
                 $('.title-modal').text('Please select');
                 $('.body-modal').text('Select an action or users');
@@ -375,7 +375,7 @@ $(document).ready(function () {
         }
         // actions 1/2/3
         if ($('.select:last').val() === '1') {
-            let selectValue = 'on';;
+            let selectValue = 'on';
             $.ajax({
                 url: 'update.php',
                 method: 'POST',
@@ -389,7 +389,7 @@ $(document).ready(function () {
                     let dataId = dataParse.selectId;
                     removeCheckbox();
                     for (let i = 0; i < dataId.length; i++) {
-                        $(`[data-idrow='${dataId[i]}']`).find('.status-user').html("<input class='status-input' type='hidden' value='off'><span tooltip='offline'><i class='fas fa-circle offline'></i></span>");
+                        $(`[data-idrow='${dataId[i]}']`).find('.status-user').html("<input class='status-input' type='hidden' value='on'><span tooltip='online'><i class='fas fa-circle online'></i></span>");
                     }
                 }
             });
@@ -414,7 +414,7 @@ $(document).ready(function () {
             });
         }
         else if ($('.select:last').val() === '3') {
-            if ($('.select').val() === '3' && id.length === 0) {
+            if ($('.select:last').val() === '3' && id.length === 0) {
                 $('#deleteModal').modal('toggle');
                 $('.title-modal').text('Please select');
                 $('.body-modal').text('Select an action or users');
