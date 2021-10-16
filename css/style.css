@@ -36,6 +36,9 @@
     margin-left: 10px;
 }
 
+.edit-btn__item {
+    margin-right: 5px;
+}
 /* START TOOLTIP STYLES */
 
 [tooltip] {
