@@ -235,7 +235,7 @@ $(document).ready(function () {
                     $(`[data-idrow='${userId}']`).find('.role-user').text(dataParse.user.role);
                 } else {
                     $(`[data-idrow='${userId}']`).find('.role-user').text(dataParse.user.role);
-                } 
+                }
                 idEdit = 0;
             }, error: function (data) {
                 let dataParse = $.parseJSON(data.responseText);
@@ -284,16 +284,17 @@ $(document).ready(function () {
     //     });
     // });
     $(document).on("click", "#delete", function () {
-        $('#deleteModal').modal('toggle');
-        $('.modal-title').text('Delete');
-        $('.body-modal').text('Are you sure want to delete this user?');
         $('#delete-rows').remove();
         if ($("#delete-row").length === 0) {
             $('#deleteModal .modal-footer').append("<button type='button' class='btn btn-dark' id='delete-row'>OK</button>");
         }
         let target = $(this).data("trash");
         $('#delete-row').attr('data-id', target);
-        console.log(target);
+        let name = $(`[data-idrow='${target}']`).find('.first-name').text();
+        let lastName = $(`[data-idrow='${target}']`).find('.last-name').text();
+        $('#deleteModal').modal('toggle');
+        $('.modal-title').text('Delete');
+        $('.body-modal').text(`Are you sure want to delete ${name} ${lastName} ?`);
     });
     $(document).on("click", "#delete-row", function (e) {
         e.preventDefault();
@@ -391,7 +392,7 @@ $(document).ready(function () {
             }
             $('#deleteModal').modal('show');
             $('.title-modal').text('Delete');
-            $('.body-modal').text('Are you sure you want to delete the user?');
+            $('.body-modal').text('Are you sure you want to delete the selected users?');
             $('#delete-rows').click(function () {
                 $.ajax({
                     url: 'delete.php',
@@ -489,7 +490,7 @@ $(document).ready(function () {
             }
             $('#deleteModal').modal('show');
             $('.title-modal').text('Delete');
-            $('.body-modal').text('Are you sure you want to delete the user?');
+            $('.body-modal').text('Are you sure you want to delete the selected users?');
             $('#delete-rows').click(function () {
                 $.ajax({
                     url: 'delete.php',
