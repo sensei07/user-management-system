@@ -321,15 +321,13 @@ $(document).ready(function () {
     ///// Edit status
     $(document).on('click', '.btn-okey:first', function () {
         let id = [];
+        let selectValue = '';
+        let action = '';
         let idString = '';
-        $('.check:checkbox:checked').each(function (i) {
+        $('.check:checkbox:checked').each(function () {
             id.push($(this).val());
-            idString = id.toString();
+            idString = id.join(',');
         })
-        $("#deleteModal").on("hidden.bs.modal", function () {
-            console.log(idString);
-            console.log(id);
-        });
         // select's confirm window
         if ($('.select:first').val() === '0' || id.length === 0) {
             $('#deleteModal').modal('show');
@@ -340,45 +338,16 @@ $(document).ready(function () {
         }
         // actions 1/2/3
         if ($('.select:first').val() === '1' && id.length >= 1) {
-            let selectValue = 'on';
-            $.ajax({
-                url: 'update.php',
-                method: 'POST',
-                data: {
-                    id: id,
-                    selectValue: selectValue
-                },
-                dataType: 'html',
-                success: function (data) {
-                    dataParse = $.parseJSON(data);
-                    let dataId = dataParse.selectId;
-                    removeCheckbox();
-                    for (let i = 0; i < dataId.length; i++) {
-                        $(`[data-idrow= '${dataId[i]}']`).find('.status-user').html("<input class='status-input' type='hidden' value='on'><span tooltip='online'><i class='fas fa-circle online'></i></span>");
-                    }
-                }
-            });
+            selectValue = 'on';
+            action = 'update-status';
+            sendActions();
         } else if ($('.select:first').val() === '2' && id.length >= 1) {
-            let selectValue = 'off';;
-            $.ajax({
-                url: 'update.php',
-                method: 'POST',
-                data: {
-                    id: id,
-                    selectValue: selectValue
-                },
-                dataType: 'html',
-                success: function (data) {
-                    dataParse = $.parseJSON(data);
-                    let dataId = dataParse.selectId;
-                    removeCheckbox();
-                    for (let i = 0; i < dataId.length; i++) {
-                        $(`[data-idrow= '${dataId[i]}']`).find('.status-user').html("<input class='status-input' type='hidden' value='off'><span tooltip='offline'><i class='fas fa-circle offline'></i></span>");
-                    }
-                }
-            });
+            selectValue = 'off';
+            action = 'update-status'
+            sendActions();
         }
-        else if ($('.select:first').val() === '3') {
+        else if ($('.select:first').val() === '3' && id.length >= 1) {
+            action = 'delete';
             $('#delete-row').remove();
             if ($('.select:first').val() === '3' && id.length === 0) {
                 $('#deleteModal').modal('toggle');
@@ -387,6 +356,10 @@ $(document).ready(function () {
                 $('#delete-row').remove();
                 return;
             }
+            $("#deleteModal").on("hidden.bs.modal", function () {
+                idString = '';
+                console.log(idString);
+            });
             if ($("#delete-rows").length === 0) {
                 $('#deleteModal .modal-footer').append("<button type='button' class='btn btn-dark' id='delete-rows'>OK</button>");
             }
@@ -394,27 +367,38 @@ $(document).ready(function () {
             $('.title-modal').text('Delete');
             $('.body-modal').text('Are you sure you want to delete the selected users?');
             $('#delete-rows').click(function () {
-                $.ajax({
-                    url: 'delete.php',
-                    method: 'POST',
-                    data: {
-                        selectedId: idString
-                    },
-                    success: function (data) {
-                        $('#delete-row').remove();
-                        dataParse = $.parseJSON(data);
-                        let res = dataParse.selectId.split(",");
-                        console.log(res);
-                        // let dataId = dataParse.selectId;
-                        $('#deleteModal').modal('hide');
-                        removeCheckbox();
-                        for (let i = 0; i <= res.length; i++) {
-                            $(`[data-idrow= '${res[i]}']`).remove();
-                        };
-                    },
-                });
+                sendActions();
             });
-        };
+        }
+        function sendActions() {
+            $.ajax({
+                url: 'update.php',
+                method: 'POST',
+                data: {
+                    id: idString,
+                    selectValue: selectValue,
+                    action: action,
+                },
+                dataType: 'html',
+                success: function (data) {
+                    dataParse = $.parseJSON(data);
+                    let dataId = dataParse.selectId.split(',');
+                    removeCheckbox();
+                    if (dataParse.action === 'update-status') {
+                        for (let i = 0; i <= dataId.length; i++) {
+                            $(`[data-idrow= '${dataId[i]}']`).find('.status-user').html(`<input class='status-input' type='hidden' value='${dataParse.selectValue}'><span tooltip='${dataParse.userStatus}'><i class='fas fa-circle ${dataParse.userStatus}'></i></span>`);
+                        }
+                    } else if (dataParse.action === 'delete') {
+                        $('#delete-rows').remove();
+                        $('#deleteModal').modal('hide');
+                        for (let i = 0; i <= dataId.length; i++) {
+                            $(`[data-idrow= '${dataId[i]}']`).remove();
+                        };
+                    }
+
+                }
+            });
+        }
     });
     //// second block
     $(document).on('click', '.btn-okey:last', function () {
