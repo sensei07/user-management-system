@@ -5,8 +5,10 @@ extract($_POST);
 
 if (isset($_POST['firstName']) && isset($_POST['lastName']) && isset($_POST['status']) && isset($_POST['role'])) {
     $strSearch = array('<', " ", '&lt', '>', '/');
+    // $firstName = str_replace($strSearch, '', $_POST['firstName']);
     $firstName = filter_var(str_replace($strSearch, '', ($_POST['firstName'])), FILTER_SANITIZE_STRING);
     $lastName = filter_var(str_replace($strSearch, '', ($_POST['lastName'])), FILTER_SANITIZE_STRING);
+    //ctype_alnum($firstName) === false || ctype_alnum($lastName) === false 
     if (strlen($firstName) < 2 || strlen($lastName) < 2) {
         mysqli_close($con);
         $error = 'First and last name can only contain letters and numbers and at least 2 characters and do not contain spaces';
@@ -48,9 +50,8 @@ if (isset($_POST['firstName']) && isset($_POST['lastName']) && isset($_POST['sta
 
 if (isset($_POST['idEdit'])) {
     $strSearch = array('<', " ", '&lt', '>', '/');
-    $firstName = str_replace($strSearch, '', $_POST['firstNameEdit']);
-    $lastName = str_replace($strSearch, '', $_POST['lastNameEdit']);
-    $lastName = $_POST['lastNameEdit'];
+    $firstName = filter_var(str_replace($strSearch, '', ($_POST['firstNameEdit'])), FILTER_SANITIZE_STRING);
+    $lastName = filter_var(str_replace($strSearch, '', ($_POST['lastNameEdit'])), FILTER_SANITIZE_STRING);
     $status = $_POST['statusEdit'];
     $role = $_POST['roleEdit'];
     $id = $_POST['idEdit'];
