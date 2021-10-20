@@ -252,30 +252,70 @@ $(document).ready(function () {
         });
     });
     /////// DELETE USER
-    $(document).on('click', '#delete', function () {
-        let deleteId = $(this).data('trash');
+    // $(document).on('click', '#delete', function () {
+    //     let deleteId = $(this).data('trash');
+    //     console.log(deleteId);
+    //     $("#deleteModal").on("hidden.bs.modal", function () {
+    //         deleteId = 0;
+    //         console.log(deleteId);
+    //     });
+    //     $('#deleteModal').modal('toggle');
+    //     $('.modal-title').text('Delete');
+    //     $('.body-modal').text('Are you sure want to delete this user?');
+    //     if ($("#delete-row").length === 0) {
+    //         $('#deleteModal .modal-footer').append("<button type='button' class='btn btn-dark' id='delete-row'>OK</button>");
+    //     }
+    //     $('#delete-row').click(function () {
+    //         $.ajax({
+    //             url: "delete.php",
+    //             type: 'POST',
+    //             data: {
+    //                 deleteId: deleteId,
+    //             },
+    //             dataType: 'html',
+    //             success: function (data) {
+    //                 $('#delete-row').remove();
+    //                 dataParse = $.parseJSON(data);
+    //                 $('#deleteModal').modal('hide');
+    //                 $(`[data-idrow='${dataParse.id}']`).remove();
+    //                 deleteId = 0;
+    //             }
+    //         })
+    //     });
+    // });
+    $(document).on("click", "#delete", function () {
         $('#deleteModal').modal('toggle');
         $('.modal-title').text('Delete');
         $('.body-modal').text('Are you sure want to delete this user?');
+        $('#delete-rows').remove();
         if ($("#delete-row").length === 0) {
             $('#deleteModal .modal-footer').append("<button type='button' class='btn btn-dark' id='delete-row'>OK</button>");
         }
-        $('#delete-row').click(function () {
-            $.ajax({
-                url: "delete.php",
-                type: 'post',
-                data: {
-                    deleteId: deleteId
-                },
-                dataType: 'html',
-                success: function (data) {
-                    $('#delete-row').remove();
-                    dataParse = $.parseJSON(data);
-                    $('#deleteModal').modal('hide');
-                    $(`[data-idrow='${dataParse.id}']`).remove();
-                    deleteId = 0;
-                }
-            })
+        let target = $(this).data("trash");
+        $('#delete-row').attr('data-id', target);
+        console.log(target);
+    });
+    $(document).on("click", "#delete-row", function (e) {
+        e.preventDefault();
+        var id = $(this).data("id");
+        $.ajax({
+            url: "delete.php",
+            type: "POST",
+            dataType: "html",
+            data: {
+                deleteId: id,
+            },
+            success: function (data) {
+                $('#delete-row').remove();
+                id = 0;
+                dataParse = $.parseJSON(data);
+                $('#deleteModal').modal('hide');
+                $(`[data-idrow='${dataParse.id}']`).remove();
+
+            },
+            error: function () {
+                console.log("something went wrong");
+            },
         });
     });
     ///// Edit status
@@ -296,6 +336,7 @@ $(document).ready(function () {
             $('.title-modal').text('Please select');
             $('.body-modal').text('Select an action or users');
             $('#delete-row').remove();
+            $('#delete-rows').remove();
         }
         // actions 1/2/3
         if ($('.select:first').val() === '1' && id.length >= 1) {
@@ -313,7 +354,7 @@ $(document).ready(function () {
                     let dataId = dataParse.selectId;
                     removeCheckbox();
                     for (let i = 0; i < dataId.length; i++) {
-                        $(`[data-idrow='${dataId[i]}']`).find('.status-user').html("<input class='status-input' type='hidden' value='on'><span tooltip='online'><i class='fas fa-circle online'></i></span>");
+                        $(`[data-idrow= '${dataId[i]}']`).find('.status-user').html("<input class='status-input' type='hidden' value='on'><span tooltip='online'><i class='fas fa-circle online'></i></span>");
                     }
                 }
             });
@@ -332,25 +373,27 @@ $(document).ready(function () {
                     let dataId = dataParse.selectId;
                     removeCheckbox();
                     for (let i = 0; i < dataId.length; i++) {
-                        $(`[data-idrow='${dataId[i]}']`).find('.status-user').html("<input class='status-input' type='hidden' value='off'><span tooltip='offline'><i class='fas fa-circle offline'></i></span>");
+                        $(`[data-idrow= '${dataId[i]}']`).find('.status-user').html("<input class='status-input' type='hidden' value='off'><span tooltip='offline'><i class='fas fa-circle offline'></i></span>");
                     }
                 }
             });
         }
         else if ($('.select:first').val() === '3') {
+            $('#delete-row').remove();
             if ($('.select:first').val() === '3' && id.length === 0) {
                 $('#deleteModal').modal('toggle');
                 $('.title-modal').text('Please select');
                 $('.body-modal').text('Select an action or users');
+                $('#delete-row').remove();
                 return;
             }
-            if ($("#delete-row").length === 0) {
-                $('#deleteModal .modal-footer').append("<button type='button' class='btn btn-dark' id='delete-row'>OK</button>");
+            if ($("#delete-rows").length === 0) {
+                $('#deleteModal .modal-footer').append("<button type='button' class='btn btn-dark' id='delete-rows'>OK</button>");
             }
             $('#deleteModal').modal('show');
             $('.title-modal').text('Delete');
             $('.body-modal').text('Are you sure you want to delete the user?');
-            $('#delete-row').click(function () {
+            $('#delete-rows').click(function () {
                 $.ajax({
                     url: 'delete.php',
                     method: 'POST',
@@ -366,23 +409,13 @@ $(document).ready(function () {
                         $('#deleteModal').modal('hide');
                         removeCheckbox();
                         for (let i = 0; i <= res.length; i++) {
-                            $(`[data-idrow='${res[i]}']`).remove();
+                            $(`[data-idrow= '${res[i]}']`).remove();
                         };
                     },
                 });
             });
         };
     });
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
     //// second block
     $('.btn-okey:last').click(function () {
         let id = [];
@@ -412,7 +445,7 @@ $(document).ready(function () {
                     let dataId = dataParse.selectId;
                     removeCheckbox();
                     for (let i = 0; i < dataId.length; i++) {
-                        $(`[data-idrow='${dataId[i]}']`).find('.status-user').html("<input class='status-input' type='hidden' value='on'><span tooltip='online'><i class='fas fa-circle online'></i></span>");
+                        $(`[data - idrow= '${dataId[i]}']`).find('.status-user').html("<input class='status-input' type='hidden' value='on'><span tooltip='online'><i class='fas fa-circle online'></i></span>");
                     }
                 }
             });
@@ -431,7 +464,7 @@ $(document).ready(function () {
                     let dataId = dataParse.selectId;
                     removeCheckbox();
                     for (let i = 0; i < dataId.length; i++) {
-                        $(`[data-idrow='${dataId[i]}']`).find('.status-user').html("<input class='status-input' type='hidden' value='off'><span tooltip='offline'><i class='fas fa-circle offline'></i></span>");
+                        $(`[data - idrow= '${dataId[i]}']`).find('.status-user').html("<input class='status-input' type='hidden' value='off'><span tooltip='offline'><i class='fas fa-circle offline'></i></span>");
                     }
                 }
             });
@@ -462,7 +495,7 @@ $(document).ready(function () {
                         $('#deleteModal').modal('hide');
                         removeCheckbox();
                         for (let i = 0; i < dataId.length; i++) {
-                            $(`[data-idrow='${dataId[i]}']`).remove();
+                            $(`[data - idrow= '${dataId[i]}']`).remove();
                         };
                     },
                 });
