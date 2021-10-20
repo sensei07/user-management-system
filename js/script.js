@@ -155,7 +155,6 @@ $(document).ready(function () {
     $(document).on('click', '.edit-user__modal', function () {
         $('.title').text('Edit user');
         let idEdit = $(this).data('id');
-        console.log(idEdit);
         let btnEdit = `<button type='button' id='edit-user__btn' class='btn btn-primary'>Edit</button>`;
         if (!$('#userModal .modal-footer').children('#edit-user__btn').length > 0) {
             $('#userModal .modal-footer').append(btnEdit);
@@ -173,84 +172,85 @@ $(document).ready(function () {
         } else if ($(`[data-idrow='${idEdit}']`).find('.role-user').text() == 'user') {
             $('#role').val(2);
         }
-        $('#edit-user__btn:last').click(function () {
-            let firstNameEdit = $('#firstname').val();
-            let lastNameEdit = $('#lastname').val();
-            let statusEdit = $('#status').val();
-            let roleEdit = $('#role').val();
-            if (firstNameEdit.length < 2 || lastNameEdit.length < 2) {
-                let confirmError = `<div class="alert alert-danger danger danger-name" role="alert">
+        $('#edit-user__btn').attr('data-id', idEdit);
+    });
+    $(document).on('click', '#edit-user__btn', function () {
+        let idEdit = $(this).data("id");
+        let firstNameEdit = $('#firstname').val();
+        let lastNameEdit = $('#lastname').val();
+        let statusEdit = $('#status').val();
+        let roleEdit = $('#role').val();
+        if (firstNameEdit.length < 2 || lastNameEdit.length < 2) {
+            let confirmError = `<div class="alert alert-danger danger danger-name" role="alert">
                     please enter your first name or last name
                 </div>`;
-                if (!$('#confirm-name').children('.danger').length > 0) {
+            if (!$('#confirm-name').children('.danger').length > 0) {
+                $('#confirm-name').append(confirmError);
+            } return false;
+        }
+        if (roleEdit == '0') {
+            let confirmError = `<div class="alert alert-danger danger danger-role" role="alert">
+                    please enter a role
+                </div>`;
+            if (!$('#confirm-role').children('.danger').length > 0) {
+                $('#confirm-role').append(confirmError);
+            } return false;
+        }
+        if ($("#status:checked").val() == 'on') {
+            statusEdit = 'on';
+        } else {
+            statusEdit = 'off';
+        }
+        if (roleEdit == '2') {
+            roleEdit = 'user';
+        } else if (roleEdit == '1') {
+            roleEdit = 'admin';
+        }
+        $.ajax({
+            url: 'add-edit.php',
+            type: 'post',
+            data: {
+                firstNameEdit: firstNameEdit,
+                lastNameEdit: lastNameEdit,
+                statusEdit: statusEdit,
+                roleEdit: roleEdit,
+                idEdit: idEdit,
+            },
+            success: function (data) {
+                $('#edit-user__btn').remove();
+                let dataParse = $.parseJSON(data);
+                let userId = dataParse.user.id;
+                let statusParse = dataParse.user.status;
+                $('#userModal').modal('hide');
+                $(`[data-idrow='${userId}']`).find('.first-name').text(dataParse.user.firstName);
+                $(`[data-idrow='${userId}']`).find('.last-name').text(dataParse.user.lastName);
+                if (statusParse == 'on') {
+                    statusEdit = 'on';
+                    $(`[data-idrow='${userId}']`).find('.status-user').html("<input class='status-input' type='hidden' value='on'><span tooltip='online'><i class='fas fa-circle online'></i></span>");
+                } else {
+                    statusEdit = 'off';
+                    $(`[data-idrow='${userId}']`).find('.status-user').html("<input class='status-input' type='hidden' value='off'><span tooltip='offline'><i class='fas fa-circle offline'></i></span>");
+                }
+                if (dataParse.user.role == 'admin') {
+                    $(`[data-idrow='${userId}']`).find('.role-user').text(dataParse.user.role);
+                } else {
+                    $(`[data-idrow='${userId}']`).find('.role-user').text(dataParse.user.role);
+                } 
+                idEdit = 0;
+            }, error: function (data) {
+                let dataParse = $.parseJSON(data.responseText);
+                let errorText = dataParse.error.message;
+                let confirmError = `<div class="alert alert-danger danger error-name" role="alert">
+                    ${errorText}
+                </div>`;
+                if (!$('#confirm-name').children('.error-name').length > 0) {
                     $('#confirm-name').append(confirmError);
                 } return false;
             }
-            if (roleEdit == '0') {
-                let confirmError = `<div class="alert alert-danger danger danger-role" role="alert">
-                    please enter a role
-                </div>`;
-                if (!$('#confirm-role').children('.danger').length > 0) {
-                    $('#confirm-role').append(confirmError);
-                } return false;
-            }
-            if ($("#status:checked").val() == 'on') {
-                statusEdit = 'on';
-            } else {
-                statusEdit = 'off';
-            }
-            if (roleEdit == '2') {
-                roleEdit = 'user';
-            } else if (roleEdit == '1') {
-                roleEdit = 'admin';
-            }
-            $.ajax({
-                url: 'add-edit.php',
-                type: 'post',
-                data: {
-                    firstNameEdit: firstNameEdit,
-                    lastNameEdit: lastNameEdit,
-                    statusEdit: statusEdit,
-                    roleEdit: roleEdit,
-                    idEdit: idEdit,
-                },
-                beforeSend: function () {
-                    idEdit = 0;
-                },
-                success: function (data) {
-                    $('#edit-user__btn').remove();
-                    let dataParse = $.parseJSON(data);
-                    let userId = dataParse.user.id;
-                    let statusParse = dataParse.user.status;
-                    $('#userModal').modal('hide');
-                    $(`[data-idrow='${userId}']`).find('.first-name').text(dataParse.user.firstName);
-                    $(`[data-idrow='${userId}']`).find('.last-name').text(dataParse.user.lastName);
-                    if (statusParse == 'on') {
-                        statusEdit = 'on';
-                        $(`[data-idrow='${userId}']`).find('.status-user').html("<input class='status-input' type='hidden' value='on'><span tooltip='online'><i class='fas fa-circle online'></i></span>");
-                    } else {
-                        statusEdit = 'off';
-                        $(`[data-idrow='${userId}']`).find('.status-user').html("<input class='status-input' type='hidden' value='off'><span tooltip='offline'><i class='fas fa-circle offline'></i></span>");
-                    }
-                    if (dataParse.user.role == 'admin') {
-                        $(`[data-idrow='${userId}']`).find('.role-user').text(dataParse.user.role);
-                    } else {
-                        $(`[data-idrow='${userId}']`).find('.role-user').text(dataParse.user.role);
-                    }
-                    idEdit = null;
-                }, error: function (data) {
-                    let dataParse = $.parseJSON(data.responseText);
-                    let errorText = dataParse.error.message;
-                    let confirmError = `<div class="alert alert-danger danger error-name" role="alert">
-                    ${errorText}
-                </div>`;
-                    if (!$('#confirm-name').children('.error-name').length > 0) {
-                        $('#confirm-name').append(confirmError);
-                    } return false;
-                }
-            })
-        });
+
+        })
     });
+
     /////// DELETE USER
     // $(document).on('click', '#delete', function () {
     //     let deleteId = $(this).data('trash');
@@ -297,7 +297,7 @@ $(document).ready(function () {
     });
     $(document).on("click", "#delete-row", function (e) {
         e.preventDefault();
-        var id = $(this).data("id");
+        let id = $(this).data("id");
         $.ajax({
             url: "delete.php",
             type: "POST",
@@ -307,7 +307,6 @@ $(document).ready(function () {
             },
             success: function (data) {
                 $('#delete-row').remove();
-                id = 0;
                 dataParse = $.parseJSON(data);
                 $('#deleteModal').modal('hide');
                 $(`[data-idrow='${dataParse.id}']`).remove();
