@@ -21,8 +21,9 @@ if (isset($_POST['deleteId'])) {
 }
 
 if (isset($_POST["selectedId"])) {
-    foreach ($_POST["selectedId"] as $id) {
-        $sql = "delete from `users` where id='" . $id . "'";
+    $arr = explode(',', $_POST['selectedId']);
+    foreach ($arr as $unique) {
+        $sql = "DELETE from `users` WHERE id = $unique";
         $result = mysqli_query($con, $sql);
     }
     $errorHttp = array(
