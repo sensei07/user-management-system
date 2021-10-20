@@ -416,17 +416,24 @@ $(document).ready(function () {
         };
     });
     //// second block
-    $('.btn-okey:last').click(function () {
+    $(document).on('click', '.btn-okey:last', function () {
         let id = [];
+        let idString = '';
         $('.check:checkbox:checked').each(function (i) {
-            id[i] = $(this).val();
+            id.push($(this).val());
+            idString = id.toString();
         })
+        $("#deleteModal").on("hidden.bs.modal", function () {
+            console.log(idString);
+            console.log(id);
+        });
         // select's confirm window
         if ($('.select:last').val() === '0' || id.length === 0) {
-            $('#deleteModal').modal('toggle');
+            $('#deleteModal').modal('show');
             $('.title-modal').text('Please select');
             $('.body-modal').text('Select an action or users');
             $('#delete-row').remove();
+            $('#delete-rows').remove();
         }
         // actions 1/2/3
         if ($('.select:last').val() === '1' && id.length >= 1) {
@@ -444,7 +451,7 @@ $(document).ready(function () {
                     let dataId = dataParse.selectId;
                     removeCheckbox();
                     for (let i = 0; i < dataId.length; i++) {
-                        $(`[data - idrow= '${dataId[i]}']`).find('.status-user').html("<input class='status-input' type='hidden' value='on'><span tooltip='online'><i class='fas fa-circle online'></i></span>");
+                        $(`[data-idrow= '${dataId[i]}']`).find('.status-user').html("<input class='status-input' type='hidden' value='on'><span tooltip='online'><i class='fas fa-circle online'></i></span>");
                     }
                 }
             });
@@ -463,42 +470,47 @@ $(document).ready(function () {
                     let dataId = dataParse.selectId;
                     removeCheckbox();
                     for (let i = 0; i < dataId.length; i++) {
-                        $(`[data - idrow= '${dataId[i]}']`).find('.status-user').html("<input class='status-input' type='hidden' value='off'><span tooltip='offline'><i class='fas fa-circle offline'></i></span>");
+                        $(`[data-idrow= '${dataId[i]}']`).find('.status-user').html("<input class='status-input' type='hidden' value='off'><span tooltip='offline'><i class='fas fa-circle offline'></i></span>");
                     }
                 }
             });
         }
         else if ($('.select:last').val() === '3') {
+            $('#delete-row').remove();
             if ($('.select:last').val() === '3' && id.length === 0) {
                 $('#deleteModal').modal('toggle');
                 $('.title-modal').text('Please select');
                 $('.body-modal').text('Select an action or users');
+                $('#delete-row').remove();
                 return;
             }
-            if ($("#delete-row").length === 0) {
-                $('#deleteModal .modal-footer').append("<button type='button' class='btn btn-dark' id='delete-row'>OK</button>");
+            if ($("#delete-rows").length === 0) {
+                $('#deleteModal .modal-footer').append("<button type='button' class='btn btn-dark' id='delete-rows'>OK</button>");
             }
-            $('#deleteModal').modal('toggle');
+            $('#deleteModal').modal('show');
             $('.title-modal').text('Delete');
             $('.body-modal').text('Are you sure you want to delete the user?');
-            $('#delete-row').click(function () {
+            $('#delete-rows').click(function () {
                 $.ajax({
                     url: 'delete.php',
                     method: 'POST',
-                    data: { selectedId: id },
-                    dataType: 'html',
+                    data: {
+                        selectedId: idString
+                    },
                     success: function (data) {
                         $('#delete-row').remove();
                         dataParse = $.parseJSON(data);
-                        let dataId = dataParse.selectId;
+                        let res = dataParse.selectId.split(",");
+                        console.log(res);
+                        // let dataId = dataParse.selectId;
                         $('#deleteModal').modal('hide');
                         removeCheckbox();
-                        for (let i = 0; i < dataId.length; i++) {
-                            $(`[data - idrow= '${dataId[i]}']`).remove();
+                        for (let i = 0; i <= res.length; i++) {
+                            $(`[data-idrow= '${res[i]}']`).remove();
                         };
                     },
                 });
-            })
-        }
+            });
+        };
     });
 })
