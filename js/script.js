@@ -319,17 +319,19 @@ $(document).ready(function () {
         });
     });
     ///// Edit status
-    $(document).on('click', '.btn-okey:first', function () {
-        let id = [];
+
+    $('.btn-okey:first').click(function () {
+        // let id = undefined;
+        // let idString = undefined;
         let selectValue = '';
         let action = '';
-        let idString = '';
-        $('.check:checkbox:checked').each(function () {
-            id.push($(this).val());
-            idString = id.join(',');
-        })
+        let checkedLength = $('.check:checkbox:checked').length;
+        // $('.check:checkbox:checked').each(function () {
+        //     id.push($(this).val());
+        //     idString = id.join(',');
+        // })
         // select's confirm window
-        if ($('.select:first').val() === '0' || id.length === 0) {
+        if ($('.select:first').val() === '0' || checkedLength === 0) {
             $('#deleteModal').modal('show');
             $('.title-modal').text('Please select');
             $('.body-modal').text('Select an action or users');
@@ -337,40 +339,49 @@ $(document).ready(function () {
             $('#delete-rows').remove();
         }
         // actions 1/2/3
-        if ($('.select:first').val() === '1' && id.length >= 1) {
+        if ($('.select:first').val() === '1' && checkedLength >= 1) {
             selectValue = 'on';
             action = 'update-status';
             sendActions();
-        } else if ($('.select:first').val() === '2' && id.length >= 1) {
+        } else if ($('.select:first').val() === '2' && checkedLength >= 1) {
             selectValue = 'off';
             action = 'update-status'
             sendActions();
         }
-        else if ($('.select:first').val() === '3' && id.length >= 1) {
+        else if ($('.select:first').val() === '3' && checkedLength >= 1) {
             action = 'delete';
             $('#delete-row').remove();
-            if ($('.select:first').val() === '3' && id.length === 0) {
+            if ($('.select:first').val() === '3' && checkedLength === 0) {
                 $('#deleteModal').modal('toggle');
                 $('.title-modal').text('Please select');
                 $('.body-modal').text('Select an action or users');
                 $('#delete-row').remove();
                 return;
             }
-            $("#deleteModal").on("hidden.bs.modal", function () {
-                idString = '';
-                console.log(idString);
-            });
             if ($("#delete-rows").length === 0) {
                 $('#deleteModal .modal-footer').append("<button type='button' class='btn btn-dark' id='delete-rows'>OK</button>");
             }
             $('#deleteModal').modal('show');
             $('.title-modal').text('Delete');
             $('.body-modal').text('Are you sure you want to delete the selected users?');
-            $('#delete-rows').click(function () {
-                sendActions();
-            });
+
         }
+        $('#delete-rows').click(function () {
+            sendActions();
+        });
         function sendActions() {
+            // let idDelete = [];
+            // let idDeleteString = '';
+            // $('.check:checkbox:checked').map(function () {
+            //     idDelete.push($(this).val());
+            //     idDeleteString = idDelete.join(',');
+            // })
+            let id = [];
+            let idString = '';
+            $('.check:checkbox:checked').each(function () {
+                id.push($(this).val());
+                idString = id.join(',');
+            })
             $.ajax({
                 url: 'update.php',
                 method: 'POST',
@@ -378,6 +389,7 @@ $(document).ready(function () {
                     id: idString,
                     selectValue: selectValue,
                     action: action,
+                    // idDelete: idDeleteString,
                 },
                 dataType: 'html',
                 success: function (data) {
@@ -400,6 +412,7 @@ $(document).ready(function () {
             });
         }
     });
+
     //// second block
     $(document).on('click', '.btn-okey:last', function () {
         let id = [];
